@@ -30,24 +30,26 @@ public class RequestController {
 		return ResponseEntity.ok(service.createBuyRequest(buyRequest));
 	}
 	
+	//This end point is used by admin to get all request
 	@GetMapping("/requests")
 	public ResponseEntity< List<RequestEntity>> getAllBuyRequests(){
 		return ResponseEntity.ok(service.getAllBuyRequests());
 	}
 	
+	//This endpoint is accessed by owner 
 	@GetMapping("/requests/car/{carId}")
-	public ResponseEntity<List<RequestEntity>> getBuyRequestsByCarId(@PathVariable int carId){
+	public ResponseEntity<List<RequestEntity>> getBuyRequestsByCarId(@PathVariable Long carId){
 		return ResponseEntity.ok(service.getBuyRequestsByCarId(carId));
 	}
 	
 	
 	@PatchMapping("/{requestId}/status")
-	public ResponseEntity< RequestEntity> updateRequestStatus(@PathVariable int requestId, @RequestParam("status") RequestEntity.RequestStatus status) {
+	public ResponseEntity< RequestEntity> updateRequestStatus(@PathVariable Long requestId, @RequestParam("status") RequestEntity.RequestStatus status) {
 		return ResponseEntity.ok(service.updateRequestStatus(requestId, status));
 	}
 	
 	@DeleteMapping("/{requestId}")
-	public ResponseEntity<Void> deleteBuyRequest(@PathVariable int requestId) {
+	public ResponseEntity<Void> deleteBuyRequest(@PathVariable Long requestId) {
 		service.deleteBuyRequest(requestId);
 		return ResponseEntity.noContent().build();
 	}

@@ -5,10 +5,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 //import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.stereotype.Service;
 
 import com.project.BuyRequestService.Entity.RequestEntity;
+import com.project.BuyRequestService.dto.CarDto;
+import com.project.BuyRequestService.feign.CarServiceClient;
 import com.project.BuyRequestService.repository.RequestRepository;
 
 @Service
@@ -17,17 +20,44 @@ public class RequestService {
 	@Autowired
 	RequestRepository repository;
 	
+	@Autowired
+	CarServiceClient carServiceClient;
+	
+//	public RequestEntity createBuyRequest(RequestEntity buyRequest) {
+//		buyRequest.setRequestDate(LocalDate.now());
+//		buyRequest.setStatus(RequestEntity.RequestStatus.PENDING);
+//		return repository.save(buyRequest);
+//	}
+
 	public RequestEntity createBuyRequest(RequestEntity buyRequest) {
-		buyRequest.setRequestDate(LocalDate.now());
-		buyRequest.setStatus(RequestEntity.RequestStatus.PENDING);
-		return repository.save(buyRequest);
+	    // Fetch car details from the Car Management Service
+	    ResponseEntity<CarDto> response = carServiceClient.getCarById(buyRequest.getCarId());
+
+	    if (response.getStatusCode().is2xxSuccessful()) {
+	        CarDto carDto = response.getBody();
+
+	        // Check if the car is available
+	        if (carDto != null && "AVAILABLE".equals(carDto.getStatus().toString())) {
+	            // Set additional properties for the buy request
+	            buyRequest.setRequestDate(LocalDate.now());
+	            buyRequest.setStatus(RequestEntity.RequestStatus.PENDING);
+
+	            // Save the buy request
+	            return repository.save(buyRequest);
+	        } else {
+	            throw new IllegalStateException("Car is not available for purchase");
+	        }
+	    } else {
+	        throw new IllegalStateException("Car not found in Car Management Service");
+	    }
 	}
+
 	
 	public List<RequestEntity> getAllBuyRequests(){
-		return repository.findAll(Sort.by(Sort.Direction.DESC,"requestDate"));
+		return repository.findAll(Sort.by(Sort.Direction.ASC,"requestDate"));
 	}
 	
-	public List<RequestEntity> getBuyRequestsByCarId(int carId){
+	public List<RequestEntity> getBuyRequestsByCarId(Long carId){
 		return repository.findByCarId(carId);
 	}
 	
@@ -37,11 +67,11 @@ public class RequestService {
 //		return repository.save(buyRequest);
 //	}
 	
-	public void deleteBuyRequest(int requestId) {
+	public void deleteBuyRequest(Long requestId) {
 		repository.deleteById(requestId);
 	}
 	
-	public RequestEntity updateRequestStatus(int requestId, RequestEntity.RequestStatus status) {
+	public RequestEntity updateRequestStatus(Long requestId, RequestEntity.RequestStatus status) {
 	    // Find the request to update
 	    RequestEntity buyRequest = repository.findById(requestId)
 	            .orElseThrow(() -> new IllegalArgumentException("BuyRequest not found"));
@@ -58,8 +88,10 @@ public class RequestService {
 	    return updatedRequest;
 	}
 
+
+
 	// Helper method to reject other requests for the same car
-	private void rejectOtherRequestsForCar(int carId, int acceptedRequestId) {
+	private void rejectOtherRequestsForCar(Long carId, Long acceptedRequestId) {
 	    // Fetch all requests for the car
 	    List<RequestEntity> requests = repository.findByCarId(carId);
 

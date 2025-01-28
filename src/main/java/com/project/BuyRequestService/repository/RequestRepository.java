@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.project.BuyRequestService.Entity.RequestEntity;
 
 @Repository
-public interface RequestRepository extends JpaRepository<RequestEntity, Integer>{
-	List<RequestEntity> findByCarId(int carId);
+public interface RequestRepository extends JpaRepository<RequestEntity, Long>{
+	List<RequestEntity> findByCarId(Long carId);
 
 }

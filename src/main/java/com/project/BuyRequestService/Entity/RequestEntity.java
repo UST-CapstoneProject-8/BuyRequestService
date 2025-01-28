@@ -2,6 +2,9 @@ package com.project.BuyRequestService.Entity;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.BuyRequestService.Entity.RequestEntity.RequestStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,20 +27,20 @@ public class RequestEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int requestId;
+	private Long requestId;
 	
 	@Column(nullable = false)
-	private int carId;
+	private Long carId;
 	
 	@Column(nullable = false)
-	private int userId;
+	private Long userId;
 	
 	@Column(nullable = false)
 	private LocalDate requestDate;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private RequestStatus status;
+//	@JsonIgnore
+	private RequestStatus status = RequestStatus.PENDING;
 	
 	public enum RequestStatus{
 		PENDING,ACCEPTING,REJECTED
